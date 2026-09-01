@@ -1,0 +1,38 @@
+{
+  "name": "eti-certificates",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Elora Tech Institute — independent certificate issuance, instructor/admin workflow, and public verification. Shares the ETI-cohort Supabase project; owns its own repo, deployment, and migrations.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "15.5.22",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.5.4",
+    "tailwindcss": "^3.4.10",
+    "postcss": "^8.4.41",
+    "autoprefixer": "^10.4.20",
+    "@supabase/supabase-js": "^2.45.4",
+    "@supabase/ssr": "^0.5.1",
+    "zod": "^3.23.8",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.436.0",
+    "server-only": "^0.0.1",
+    "@react-pdf/renderer": "^3.4.4",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@types/qrcode": "^1.5.5",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "15.5.22"
+  }
+}
