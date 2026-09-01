@@ -16,12 +16,19 @@ import type { CertificationRequest } from "@/lib/certificates/types";
 //      approve the request — it only moves it into the admin queue;
 //      a SEPARATE, subsequent call to this same endpoint (without
 //      `override: true`, once the request is at pending_admin) is
-//      needed to actually approve it. This keeps "skip the
+//      needed to actually approve the request. This keeps "skip the
 //      instructor" and "approve" as two distinct, separately audited
 //      decisions rather than one action that does both at once.
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const admin = await verifyAdminRequest(request);
-  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!admin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
 
   const body = await request.json().catch(() => ({}));
   const client = getAdminClient();
@@ -29,19 +36,29 @@ export async function POST(request: Request, { params }: { params: { id: string 
   const { data: reqRow, error: fetchError } = await client
     .from("certification_requests")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single<CertificationRequest>();
 
-  if (fetchError || !reqRow) return NextResponse.json({ error: "Request not found" }, { status: 404 });
+  if (fetchError || !reqRow) {
+    return NextResponse.json({ error: "Request not found" }, { status: 404 });
+  }
 
   if (body?.override === true) {
     const parsed = adminOverrideSchema.safeParse(body);
-    if (!parsed.success) return NextResponse.json({ error: "notes is required for an override" }, { status: 400 });
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "notes is required for an override" },
+        { status: 400 }
+      );
+    }
 
     try {
       assertTransition(reqRow.status, "pending_admin");
     } catch (err) {
-      if (err instanceof IllegalTransitionError) return NextResponse.json({ error: err.message }, { status: 409 });
+      if (err instanceof IllegalTransitionError) {
+        return NextResponse.json({ error: err.message }, { status: 409 });
+      }
       throw err;
     }
 
@@ -53,15 +70,20 @@ export async function POST(request: Request, { params }: { params: { id: string 
         admin_email: admin.email,
         override_used: true,
       })
-      .eq("id", params.id)
+      .eq("id", id)
       .eq("status", reqRow.status)
       .select("*")
       .single();
 
-    if (error || !updated) return NextResponse.json({ error: error?.message ?? "Update failed" }, { status: 409 });
+    if (error || !updated) {
+      return NextResponse.json(
+        { error: error?.message ?? "Update failed" },
+        { status: 409 }
+      );
+    }
 
     await logAuditEvent({
-      requestId: params.id,
+      requestId: id,
       actorType: "admin",
       actorEmail: admin.email,
       eventType: "admin_overrode",
@@ -72,14 +94,20 @@ export async function POST(request: Request, { params }: { params: { id: string 
   }
 
   const parsed = adminDecisionSchema.safeParse(body);
+
   if (!parsed.success || parsed.data.decision !== "approved") {
-    return NextResponse.json({ error: "Invalid payload for approval" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid payload for approval" },
+      { status: 400 }
+    );
   }
 
   try {
     assertTransition(reqRow.status, "approved");
   } catch (err) {
-    if (err instanceof IllegalTransitionError) return NextResponse.json({ error: err.message }, { status: 409 });
+    if (err instanceof IllegalTransitionError) {
+      return NextResponse.json({ error: err.message }, { status: 409 });
+    }
     throw err;
   }
 
@@ -92,15 +120,20 @@ export async function POST(request: Request, { params }: { params: { id: string 
       admin_email: admin.email,
       admin_decided_at: new Date().toISOString(),
     })
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("status", reqRow.status)
     .select("*")
     .single();
 
-  if (error || !updated) return NextResponse.json({ error: error?.message ?? "Update failed" }, { status: 409 });
+  if (error || !updated) {
+    return NextResponse.json(
+      { error: error?.message ?? "Update failed" },
+      { status: 409 }
+    );
+  }
 
   await logAuditEvent({
-    requestId: params.id,
+    requestId: id,
     actorType: "admin",
     actorEmail: admin.email,
     eventType: "admin_approved",
