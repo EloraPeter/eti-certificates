@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useAdminAuth } from "@/lib/auth/AdminAuthContext";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
@@ -81,17 +82,25 @@ export default function AdminRequestsPage() {
         title="Certification requests"
         description="Review instructor-confirmed requests and authorize certification."
         actions={
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-          >
-            <option value="pending_admin">Awaiting admin</option>
-            <option value="pending_instructor">Awaiting instructor</option>
-            <option value="approved">Approved</option>
-            <option value="issued">Issued</option>
-            <option value="rejected">Rejected</option>
-          </select>
+          <>
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+            >
+              <option value="pending_admin">Awaiting admin</option>
+              <option value="pending_instructor">Awaiting instructor</option>
+              <option value="approved">Approved</option>
+              <option value="issued">Issued</option>
+              <option value="rejected">Rejected</option>
+            </select>
+            <Link
+              href="/admin/requests/new"
+              className="rounded-lg bg-brand-royal px-3 py-1.5 text-sm font-medium text-white"
+            >
+              Nominate a student
+            </Link>
+          </>
         }
       />
 

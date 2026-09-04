@@ -33,16 +33,16 @@ export async function generateCertificatePdf(input: GenerateCertificatePdfInput)
     year: "numeric",
   });
 
-  const buffer = await renderToBuffer(
-    React.createElement(CertificatePdfDocument, {
-      recipientName: input.recipientName,
-      certificateTypeName: input.certificateTypeName,
-      cohortName: input.cohortName,
-      certificateNumber: input.certificateNumber,
-      issuedAtDisplay,
-      qrDataUrl,
-    })
-  );
+  const document = React.createElement(CertificatePdfDocument, {
+    recipientName: input.recipientName,
+    certificateTypeName: input.certificateTypeName,
+    cohortName: input.cohortName,
+    certificateNumber: input.certificateNumber,
+    issuedAtDisplay,
+    qrDataUrl,
+  }) as React.ReactElement;
+
+  const buffer = await renderToBuffer(document);
 
   return buffer;
 }

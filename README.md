@@ -207,6 +207,18 @@ wanted later, a dedicated Postgres role scoped to only the
 of the full `service_role` key) is the concrete next step — noted as
 a possible hardening, not implemented in v1.
 
+## Creating a request from the UI
+
+`/admin/requests/new` ("Nominate a student" button on the requests
+page) lets an admin start a certification request from dropdowns —
+cohort, then student and instructor scoped to that cohort (via the
+read-only `/api/admin/cohorts/[id]/students` and `/instructors`
+endpoints), then certificate type. It calls the same
+`POST /api/certificates/request` endpoint a curl call would; the form
+is UX, not a security boundary — the endpoint re-validates the
+student's status and the instructor's cohort assignment itself
+regardless of what the form offered.
+
 ## What was deliberately not built (v1 scope)
 
 - **Student self-request.** The schema fully supports it
